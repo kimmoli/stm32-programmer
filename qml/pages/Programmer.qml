@@ -77,7 +77,7 @@ Page
                 {
                     id: vddControlSwitch
                     text: qsTr("Vdd control")
-                    width: column.width/2
+                    width: column.width/2 - 26
                     busy: vddBusy.running
                 }
                 Button
