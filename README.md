@@ -1,7 +1,7 @@
 WIP
 ===
 
-STM32 I2C Bootloader for Jolla TOH
+STM32 I2C Programmer for Jolla TOH
 ====================
 
 Program STM32 through I2C directly from Jolla.
