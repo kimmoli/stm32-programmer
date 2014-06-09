@@ -55,13 +55,23 @@ Page
                 id: selectFileButton
                 text: qsTr("Select file")
                 anchors.horizontalCenter: parent.horizontalCenter
-                onClicked: messageBox.showMessage("Not yet implemented", 1500)
+                onClicked:
+                {
+                    var fileSelectorDialog = pageStack.push(Qt.resolvedUrl("FileSelector.qml"),
+                                                            {"selectedFile": filename})
+
+                    fileSelectorDialog.accepted.connect(function()
+                    {
+                        filename = fileSelectorDialog.selectedFile
+                    })
+                }
             }
             Label
             {
                 id: selectedFile
                 text: qsTr("File: %1").arg(filename)
                 anchors.horizontalCenter: parent.horizontalCenter
+
             }
 
             SectionHeader

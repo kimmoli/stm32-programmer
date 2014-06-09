@@ -8,6 +8,7 @@ ApplicationWindow
 
     property string filename: "None"
     property string programmingPhase: "Waiting for user"
+
     initialPage: Qt.resolvedUrl("pages/Programmer.qml")
 
     cover: Qt.resolvedUrl("cover/CoverPage.qml")

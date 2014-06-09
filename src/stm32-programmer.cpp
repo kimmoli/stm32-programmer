@@ -22,16 +22,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QQmlContext>
 #include <QCoreApplication>
 #include "stm32p.h"
+#include "filemodel.h"
 
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setOrganizationDomain("KimmoLi");
-    QCoreApplication::setOrganizationName("KimmoLi");
-    QCoreApplication::setApplicationName("stm32-programmer");
-    QCoreApplication::setApplicationVersion("0.1-1");
-
     qmlRegisterType<Stm32p>("stm32.programmer.Stm32p", 1, 0, "Stm32p");
+    qmlRegisterType<Filemodel>("stm32.programmer.Filemodel", 1, 0, "Filemodel");
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());

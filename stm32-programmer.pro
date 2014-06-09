@@ -12,10 +12,12 @@ message($${DEFINES})
 
 SOURCES += src/stm32-programmer.cpp \
 	src/stm32p.cpp \
-    src/driverBase.cpp
+    src/driverBase.cpp \
+    src/filemodel.cpp
 	
 HEADERS += src/stm32p.h \
-    src/driverBase.h
+    src/driverBase.h \
+    src/filemodel.h
 
 OTHER_FILES += qml/stm32-programmer.qml \
     qml/cover/CoverPage.qml \
@@ -24,5 +26,6 @@ OTHER_FILES += qml/stm32-programmer.qml \
     rpm/stm32-programmer.spec \
 	stm32-programmer.png \
     stm32-programmer.desktop \
-    qml/components/Messagebox.qml
+    qml/components/Messagebox.qml \
+    qml/pages/FileSelector.qml
 
