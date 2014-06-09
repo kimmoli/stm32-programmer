@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("stm32-programmer");
     QCoreApplication::setApplicationVersion("0.1-1");
 
-    qmlRegisterType<Stm32p>("stm32-programmer.Stm32p", 1, 0, "Stm32p");
+    qmlRegisterType<Stm32p>("stm32.programmer.Stm32p", 1, 0, "Stm32p");
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());

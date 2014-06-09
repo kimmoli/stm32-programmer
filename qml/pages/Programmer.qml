@@ -1,10 +1,23 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import stm32-programmer.Stm32p 1.0
+import stm32.programmer.Stm32p 1.0
+import "../components"
 
 Page
 {
     id: page
+
+    Messagebox
+    {
+        id: messageBox
+    }
+
+    Timer
+    {
+        id: vddBusy
+        interval: 2000
+        onTriggered: vddControlSwitch.checked = true
+    }
 
     SilicaFlickable
     {
@@ -30,18 +43,89 @@ Page
             id: column
 
             width: page.width
-            spacing: Theme.paddingLarge
+            spacing: Theme.paddingMedium
+
             PageHeader
             {
-                title: "Stm32-programmer"
+                title: "STM32 Programmer"
+            }
+
+            Button
+            {
+                id: selectFileButton
+                text: qsTr("Select file")
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked: messageBox.showMessage("Not yet implemented", 1500)
             }
             Label
             {
-                x: Theme.paddingLarge
-                text: "Hello you"
-                color: Theme.primaryColor
-                font.pixelSize: Theme.fontSizeExtraLarge
+                id: selectedFile
+                text: qsTr("File: %1").arg(filename)
+                anchors.horizontalCenter: parent.horizontalCenter
             }
+
+            SectionHeader
+            {
+                text: qsTr("Target controls")
+            }
+            Row
+            {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.paddingLarge
+
+                TextSwitch
+                {
+                    id: vddControlSwitch
+                    text: qsTr("Vdd control")
+                    width: column.width/2
+                    busy: vddBusy.running
+                }
+                Button
+                {
+                    id: resetButton
+                    text: qsTr("Reset")
+                    onClicked: vddBusy.restart()
+                }
+            }
+
+            SectionHeader
+            {
+                text: qsTr("Programming controls")
+            }
+
+            Row
+            {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.paddingLarge
+
+                Button
+                {
+                    id: programButton
+                    text: qsTr("Program")
+                    onClicked: messageBox.showMessage("Not yet implemented", 1500)
+                }
+                Button
+                {
+                    id: verifyButton
+                    text: qsTr("Verify")
+                    onClicked: messageBox.showMessage("Not yet implemented", 1500)
+                }
+
+            }
+            SectionHeader
+            {
+                text: qsTr("Progress")
+            }
+
+            ProgressBar
+            {
+                id: progressIndicator
+                width: parent.width
+                indeterminate: true
+                label: qsTr("Status: %1").arg(programmingPhase)
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+
         }
     }
 

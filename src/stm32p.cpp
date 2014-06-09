@@ -15,8 +15,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Stm32p::Stm32p(QObject *parent) :
     QObject(parent)
 {
-    m_var = "";
-
     emit versionChanged();
 }
 
@@ -25,33 +23,7 @@ QString Stm32p::readVersion()
     return APPVERSION;
 }
 
-void Stm32p::readInitParams()
-{
-    QSettings settings;
-    m_var = settings.value("var", "").toString();
-
-    emit varChanged();
-}
-
 Stm32p::~Stm32p()
 {
 }
-
-
-QString Stm32p::readVar()
-{
-    return m_var;
-}
-
-void Stm32p::writeVar(QString s)
-{
-    m_var = s;
-
-    QSettings settings;
-    settings.setValue("var", m_var);
-
-    emit varChanged();
-}
-
-
 
