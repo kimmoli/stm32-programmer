@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Name=stm32-programmer
+Icon=stm32-programmer
+Exec=stm32-programmer
+
