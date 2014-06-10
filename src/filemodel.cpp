@@ -80,7 +80,7 @@ void Filemodel::processPath(const QString &path)
         _path = QDir::homePath();
     clear();
 
-    qDebug() << "Processing" << _path << _filter;
+    //qDebug() << "Processing" << _path << _filter;
 
     QDir dir(_path);
     const QFileInfoList &list = dir.entryInfoList(_filter, QDir::AllDirs | QDir::NoDot | QDir::NoSymLinks | QDir::Files, (_sorting ? QDir::Time : QDir::Name) | QDir::DirsFirst);
@@ -89,7 +89,7 @@ void Filemodel::processPath(const QString &path)
         if (info.isDir())//dir.isRoot() && info.fileName() == "..")
             continue;
 
-        qDebug() << "adding" << info.absoluteFilePath();
+        //qDebug() << "adding" << info.absoluteFilePath();
 
         QVariantMap fileInfo;
 
