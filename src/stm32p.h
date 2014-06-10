@@ -29,6 +29,8 @@ public:
     bool vddStateGet() { return _vddState; }
     void vddStateSet(bool state);
 
+    void gpioStateSet(bool state);
+
     QString errorMsgGet() { return _lastError; }
     QString statusMsgGet() { return _status; }
     int progressGet() { return _progress; }

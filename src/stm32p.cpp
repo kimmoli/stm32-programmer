@@ -15,6 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QThread>
 #include <QDebug>
 
+#define GPIO_INT "67"
 
 Stm32p::Stm32p(QObject *parent) :
     QObject(parent)
@@ -41,6 +42,9 @@ void Stm32p::generateErrorMsg(QString msg)
     emit errorMsgChanged();
 }
 
+/*
+ * Function helper to set status message and progress bar value at once
+ */
 void Stm32p::setStatus(QString status, int progress)
 {
     _status = status;
@@ -54,7 +58,7 @@ void Stm32p::setStatus(QString status, int progress)
  */
 void Stm32p::vddStateSet(bool state)
 {
-    qDebug() << "changing vdd state to´" << state;
+    qDebug() << "changing vdd state to" << state;
 
     int fd = open("/sys/devices/platform/reg-userspace-consumer.0/state", O_WRONLY);
 
@@ -73,6 +77,34 @@ void Stm32p::vddStateSet(bool state)
 }
 
 /*
+ * Function to control state of GPIO pin
+ */
+void Stm32p::gpioStateSet(bool state)
+{
+    qDebug() << "changing GPIO state to" << state;
+
+    int fd = open("/sys/class/gpio/export", O_WRONLY);
+
+    if (!(fd < 0))
+    {
+        if (write (fd, GPIO_INT, strlen(GPIO_INT)) != strlen(GPIO_INT))
+            generateErrorMsg("Failed to export GPIO");
+
+        close(fd);
+    }
+
+    fd = open("/sys/class/gpio/gpio" GPIO_INT "/value", O_WRONLY);
+
+    if (!(fd < 0))
+    {
+        if (write (fd, state ? "1" : "0", 1) != 1)
+            generateErrorMsg("Failed to set GPIO state");
+
+        close(fd);
+    }
+}
+
+/*
  * Frontend of STM programmer
  */
 void Stm32p::startProgram()
@@ -81,6 +113,9 @@ void Stm32p::startProgram()
     generateErrorMsg("Not programming yet");
 }
 
+/*
+ * Frontend of STM verifier (TBD)
+ */
 void Stm32p::startVerify()
 {
     setStatus("Verifying", 50);
