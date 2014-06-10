@@ -10,6 +10,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #ifndef STM32P_H
 #define STM32P_H
+#include "stm32driver.h"
 #include <QObject>
 
 class Stm32p : public QObject
@@ -19,6 +20,7 @@ class Stm32p : public QObject
     Q_PROPERTY(bool vddState READ vddStateGet WRITE vddStateSet NOTIFY vddStateChanged)
     Q_PROPERTY(QString errorMsg READ errorMsgGet NOTIFY errorMsgChanged)
     Q_PROPERTY(QString statusMsg READ statusMsgGet NOTIFY statusMsgChanged)
+    Q_PROPERTY(QString filename READ filenameGet WRITE filenameSet NOTIFY filenameChanged)
     Q_PROPERTY(int progress READ progressGet NOTIFY progressChanged)
 
 public:
@@ -31,9 +33,12 @@ public:
 
     void gpioStateSet(bool state);
 
+    void filenameSet(QString name);
+
     QString errorMsgGet() { return _lastError; }
     QString statusMsgGet() { return _status; }
     int progressGet() { return _progress; }
+    QString filenameGet() { return _filename; }
 
     void generateErrorMsg(QString msg);
     void setStatus(QString status, int progress);
@@ -48,12 +53,16 @@ signals:
     void errorMsgChanged();
     void statusMsgChanged();
     void progressChanged();
+    void filenameChanged();
 
 private:
     bool _vddState;
     QString _lastError;
     QString _status;
     int _progress;
+    QString _filename;
+
+    stm32Driver* STM32;
 
 };
 

@@ -58,18 +58,18 @@ Page
                 onClicked:
                 {
                     var fileSelectorDialog = pageStack.push(Qt.resolvedUrl("FileSelector.qml"),
-                                                            {"selectedFile": filename})
+                                                            {"selectedFile": stm32p.filename})
 
                     fileSelectorDialog.accepted.connect(function()
                     {
-                        filename = fileSelectorDialog.selectedFile
+                        stm32p.filename = fileSelectorDialog.selectedFile
                     })
                 }
             }
             Label
             {
                 id: selectedFile
-                text: qsTr("File: %1").arg(filename)
+                text: qsTr("File: %1").arg(stm32p.filename)
                 anchors.horizontalCenter: parent.horizontalCenter
 
             }

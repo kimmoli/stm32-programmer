@@ -21,6 +21,14 @@ Stm32p::Stm32p(QObject *parent) :
     QObject(parent)
 {
     emit versionChanged();
+
+    _filename = "None";
+    emit filenameChanged();
+
+    _progress = 0;
+    emit progressChanged();
+
+    STM32 = new stm32Driver(STM32F401_ADDRESS);
 }
 
 QString Stm32p::readVersion()
@@ -47,10 +55,25 @@ void Stm32p::generateErrorMsg(QString msg)
  */
 void Stm32p::setStatus(QString status, int progress)
 {
-    _status = status;
-    _progress = progress;
-    emit statusMsgChanged();
-    emit progressChanged();
+    if (status != _status)
+    {
+        _status = status;
+        emit statusMsgChanged();
+    }
+    if (progress != _progress)
+    {
+        _progress = progress;
+        emit progressChanged();
+    }
+}
+
+/*
+ *
+ */
+void Stm32p::filenameSet(QString name)
+{
+    _filename = name;
+    emit filenameChanged();
 }
 
 /*
@@ -109,8 +132,14 @@ void Stm32p::gpioStateSet(bool state)
  */
 void Stm32p::startProgram()
 {
-    setStatus("Programming", 10);
-    generateErrorMsg("Not programming yet");
+    setStatus("Resetting", 1);
+    vddStateSet(false);
+    gpioStateSet(false);
+    QThread::msleep(10);
+    vddStateSet(true);
+
+    if (STM32->cmdGetId() == QByteArray())
+        generateErrorMsg("GET ID Failed");
 }
 
 /*
@@ -118,6 +147,5 @@ void Stm32p::startProgram()
  */
 void Stm32p::startVerify()
 {
-    setStatus("Verifying", 50);
     generateErrorMsg("Not verifying yet");
 }
