@@ -81,7 +81,8 @@ void Filemodel::processPath(const QString &path)
     clear();
 
     qDebug() << "Processing" << _path << _filter;
-    QDir dir(path);
+
+    QDir dir(_path);
     const QFileInfoList &list = dir.entryInfoList(_filter, QDir::AllDirs | QDir::NoDot | QDir::NoSymLinks | QDir::Files, (_sorting ? QDir::Time : QDir::Name) | QDir::DirsFirst);
     foreach (const QFileInfo &info, list)
     {

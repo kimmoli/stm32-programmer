@@ -17,20 +17,20 @@ Dialog
         {
             filemodel.filter = [ "*.hex" ]
             filemodel.sorting = false
-            filemodel.path = "/home/nemo/"
+            filemodel.path = "home"
         }
     }
 
     Filemodel
     {
         id: filemodel
-        onCountChanged: console.log("Count is",count)
+        onCountChanged: header.title = filemodel.count > 0 ? qsTr("Select file") : qsTr("File not found")
     }
 
     DialogHeader
     {
         id: header
-        title: filemodel.count > 0 ?  qsTr("Select file") : qsTr("No files!")
+        title: qsTr("Loading...")
     }
 
     Loader
@@ -95,7 +95,7 @@ Dialog
                     id: file
                     text: model.name
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pixelSize: Theme.fontSizeSmall
+                    font.pixelSize: Theme.fontSizeMedium
                     color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
                 }
 
@@ -103,7 +103,7 @@ Dialog
 
             onClicked:
             {
-                selectedFile = model.path
+                selectedFile = selectedFile === model.path ? "None" : model.path
             }
         }
     }
