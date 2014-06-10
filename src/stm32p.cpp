@@ -9,8 +9,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 #include "stm32p.h"
+#include "stm32driver.h"
 #include <QSettings>
 #include <QCoreApplication>
+#include <QThread>
+#include <QDebug>
+
 
 Stm32p::Stm32p(QObject *parent) :
     QObject(parent)
@@ -27,3 +31,58 @@ Stm32p::~Stm32p()
 {
 }
 
+/*
+ * Function to log error on console, and make it available also on QML side
+ */
+void Stm32p::generateErrorMsg(QString msg)
+{
+    qCritical() << msg;
+    _lastError = msg;
+    emit errorMsgChanged();
+}
+
+void Stm32p::setStatus(QString status, int progress)
+{
+    _status = status;
+    _progress = progress;
+    emit statusMsgChanged();
+    emit progressChanged();
+}
+
+/*
+ * Function to control TOH Vdd state
+ */
+void Stm32p::vddStateSet(bool state)
+{
+    qDebug() << "changing vdd state to´" << state;
+
+    int fd = open("/sys/devices/platform/reg-userspace-consumer.0/state", O_WRONLY);
+
+    if (!(fd < 0))
+    {
+        if (write (fd, state ? "1" : "0", 1) != 1)
+            generateErrorMsg("Failed to control VDD.");
+
+        close(fd);
+    }
+
+    QThread::msleep(100);
+
+    _vddState = state;
+    emit vddStateChanged();
+}
+
+/*
+ * Frontend of STM programmer
+ */
+void Stm32p::startProgram()
+{
+    setStatus("Programming", 10);
+    generateErrorMsg("Not programming yet");
+}
+
+void Stm32p::startVerify()
+{
+    setStatus("Verifying", 50);
+    generateErrorMsg("Not verifying yet");
+}

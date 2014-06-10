@@ -16,7 +16,7 @@ Page
     {
         id: vddBusy
         interval: 2000
-        onTriggered: vddControlSwitch.checked = true
+        onTriggered: stm32p.vddState = true
     }
 
     SilicaFlickable
@@ -89,12 +89,19 @@ Page
                     text: qsTr("Vdd control")
                     width: column.width/2 - 26
                     busy: vddBusy.running
+                    automaticCheck: false
+                    checked: stm32p.vddState
+                    onClicked: stm32p.vddState = !stm32p.vddState
                 }
                 Button
                 {
                     id: resetButton
                     text: qsTr("Reset")
-                    onClicked: vddBusy.restart()
+                    onClicked:
+                    {
+                        stm32p.vddState = false
+                        vddBusy.restart()
+                    }
                 }
             }
 
@@ -112,13 +119,13 @@ Page
                 {
                     id: programButton
                     text: qsTr("Program")
-                    onClicked: messageBox.showMessage("Not yet implemented", 1500)
+                    onClicked: stm32p.startProgram()
                 }
                 Button
                 {
                     id: verifyButton
                     text: qsTr("Verify")
-                    onClicked: messageBox.showMessage("Not yet implemented", 1500)
+                    onClicked: stm32p.startVerify()
                 }
 
             }
@@ -131,8 +138,11 @@ Page
             {
                 id: progressIndicator
                 width: parent.width
-                indeterminate: true
-                label: qsTr("Status: %1").arg(programmingPhase)
+                indeterminate: stm32p.progress === 0
+                minimumValue: 0
+                maximumValue: 100
+                label: stm32p.statusMsg
+                value: stm32p.progress
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
@@ -142,6 +152,7 @@ Page
     Stm32p
     {
         id: stm32p
+        onErrorMsgChanged: messageBox.showMessage(errorMsg, 0)
     }
 }
 

@@ -16,16 +16,42 @@ class Stm32p : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString version READ readVersion NOTIFY versionChanged())
+    Q_PROPERTY(bool vddState READ vddStateGet WRITE vddStateSet NOTIFY vddStateChanged)
+    Q_PROPERTY(QString errorMsg READ errorMsgGet NOTIFY errorMsgChanged)
+    Q_PROPERTY(QString statusMsg READ statusMsgGet NOTIFY statusMsgChanged)
+    Q_PROPERTY(int progress READ progressGet NOTIFY progressChanged)
 
 public:
     explicit Stm32p(QObject *parent = 0);
     ~Stm32p();
 
     QString readVersion();
+    bool vddStateGet() { return _vddState; }
+    void vddStateSet(bool state);
+
+    QString errorMsgGet() { return _lastError; }
+    QString statusMsgGet() { return _status; }
+    int progressGet() { return _progress; }
+
+    void generateErrorMsg(QString msg);
+    void setStatus(QString status, int progress);
+
+    Q_INVOKABLE void startProgram();
+    Q_INVOKABLE void startVerify();
 
 
 signals:
     void versionChanged();
+    void vddStateChanged();
+    void errorMsgChanged();
+    void statusMsgChanged();
+    void progressChanged();
+
+private:
+    bool _vddState;
+    QString _lastError;
+    QString _status;
+    int _progress;
 
 };
 

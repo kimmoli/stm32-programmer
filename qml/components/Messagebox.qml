@@ -5,18 +5,23 @@ Rectangle
 {
     id: messagebox
     z: 20
-    width: opacity == 1.0 ? parent.width : 0
+    width: parent.width
     height: Theme.itemSizeSmall
     opacity: 0.0
-    anchors.centerIn: parent
+    anchors.top: parent.top
     color: Theme.highlightBackgroundColor
+
+    signal msgBoxAccepted()
 
     function showMessage(message, delay)
     {
         messageboxText.text = message
         messagebox.opacity = 1.0
-        messageboxVisibility.interval = (delay>0) ? delay : 3000
-        messageboxVisibility.restart()
+        if (delay > 0) /* Delay = 0  makes message persistent until clicked */
+        {
+            messageboxVisibility.interval = delay
+            messageboxVisibility.restart()
+        }
     }
 
     Label
@@ -24,6 +29,7 @@ Rectangle
         id: messageboxText
         text: ""
         anchors.centerIn: parent
+        color: "black"
     }
 
     Behavior on opacity
@@ -46,6 +52,7 @@ Rectangle
         {
             messageboxVisibility.stop()
             messagebox.opacity = 0.0
+            msgBoxAccepted()
         }
     }
 }

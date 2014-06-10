@@ -13,11 +13,13 @@ message($${DEFINES})
 SOURCES += src/stm32-programmer.cpp \
 	src/stm32p.cpp \
     src/driverBase.cpp \
-    src/filemodel.cpp
+    src/filemodel.cpp \
+    src/stm32driver.cpp
 	
 HEADERS += src/stm32p.h \
     src/driverBase.h \
-    src/filemodel.h
+    src/filemodel.h \
+    src/stm32driver.h
 
 OTHER_FILES += qml/stm32-programmer.qml \
     qml/cover/CoverPage.qml \
