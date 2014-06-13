@@ -9,32 +9,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 
-#ifdef QT_QML_DEBUG
-#include <QtQuick>
-#endif
-
-#include <sailfishapp.h>
-#include <QtQml>
-#include <QScopedPointer>
-#include <QQuickView>
-#include <QQmlEngine>
-#include <QGuiApplication>
-#include <QQmlContext>
 #include <QCoreApplication>
 #include "stm32p.h"
-#include "filemodel.h"
 
 
 int main(int argc, char *argv[])
 {
-    qmlRegisterType<Stm32p>("stm32.programmer.Stm32p", 1, 0, "Stm32p");
-    qmlRegisterType<Filemodel>("stm32.programmer.Filemodel", 1, 0, "Filemodel");
+    int i;
 
-    QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
-    QScopedPointer<QQuickView> view(SailfishApp::createView());
-    view->setSource(SailfishApp::pathTo("qml/stm32-programmer.qml"));
-    view->show();
+    printf("kukkuu");
 
-    return app->exec();
+    for (i=0; i<argc; i++)
+        qDebug() << argv[i];
+
+    return 1;
 }
 
