@@ -5,7 +5,7 @@
 /*
  * According to AN2606, STM32F401 I2C Bootloader address is 0x72
  */
-#define STM32F401_ADDRESS 0x72
+#define STM32F401_ADDRESS 0x39
 
 /*
  * I2C Bootloader constants
@@ -26,6 +26,8 @@ public:
 
     void init();
     QByteArray cmdGetId();
+    QByteArray cmdGetBootloaderVersion();
+
 
 private:
     unsigned char driverAddress;

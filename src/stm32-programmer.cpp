@@ -11,17 +11,34 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <QCoreApplication>
 #include "stm32p.h"
+#include <QDebug>
+#include <QString>
 
 
 int main(int argc, char *argv[])
 {
-    int i;
+    printf("stm32-programmer version " APPVERSION " (C) kimmoli 2014\n\n");
 
-    printf("kukkuu");
+    if (argc < 2)
+    {
+        printf("Usage:\n");
+        printf("stm32-programmer [filename] {options...}\n\n");
+        printf(" no options yet\n");
+        return 0;
+    }
 
-    for (i=0; i<argc; i++)
-        qDebug() << argv[i];
+    Stm32p* stm32 = new Stm32p();
 
+    if (!stm32->filenameSet(QString(argv[1])))
+    {
+        printf("File not found\n");
+        delete stm32;
+        return 0;
+    }
+
+    stm32->startProgram();
+
+    delete stm32;
     return 1;
 }
 

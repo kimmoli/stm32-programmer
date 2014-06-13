@@ -14,66 +14,37 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QCoreApplication>
 #include <QThread>
 #include <QDebug>
+#include <QFile>
 
 #define GPIO_INT "67"
+#define GPIO_OUT true
+#define GPIO_IN false
 
 Stm32p::Stm32p(QObject *parent) :
     QObject(parent)
 {
-    emit versionChanged();
-
-    _filename = "None";
-    emit filenameChanged();
-
-    _progress = 0;
-    emit progressChanged();
-
     STM32 = new stm32Driver(STM32F401_ADDRESS);
-}
 
-QString Stm32p::readVersion()
-{
-    return APPVERSION;
+    gpioExport();
 }
 
 Stm32p::~Stm32p()
 {
+    qDebug() << "bye...";
+
+    delete STM32;
+
+    gpioRelease();
+    vddStateSet(false);
 }
 
-/*
- * Function to log error on console, and make it available also on QML side
- */
-void Stm32p::generateErrorMsg(QString msg)
+bool Stm32p::filenameSet(QString name)
 {
-    qCritical() << msg;
-    _lastError = msg;
-    emit errorMsgChanged();
-}
+    qDebug() << "setting file name to" << name;
 
-/*
- * Function helper to set status message and progress bar value at once
- */
-void Stm32p::setStatus(QString status, int progress)
-{
-    if (status != _status)
-    {
-        _status = status;
-        emit statusMsgChanged();
-    }
-    if (progress != _progress)
-    {
-        _progress = progress;
-        emit progressChanged();
-    }
-}
+    hexFile.setFileName(name);
 
-/*
- *
- */
-void Stm32p::filenameSet(QString name)
-{
-    _filename = name;
-    emit filenameChanged();
+    return hexFile.exists();
 }
 
 /*
@@ -88,40 +59,75 @@ void Stm32p::vddStateSet(bool state)
     if (!(fd < 0))
     {
         if (write (fd, state ? "1" : "0", 1) != 1)
-            generateErrorMsg("Failed to control VDD.");
+            qCritical() << "Failed to control VDD.";
 
         close(fd);
+        return;
     }
 
     QThread::msleep(100);
-
-    _vddState = state;
-    emit vddStateChanged();
 }
 
 /*
  * Function to control state of GPIO pin
  */
-void Stm32p::gpioStateSet(bool state)
+
+void Stm32p::gpioExport()
 {
-    qDebug() << "changing GPIO state to" << state;
+    qDebug() << "exporting gpio";
 
     int fd = open("/sys/class/gpio/export", O_WRONLY);
 
     if (!(fd < 0))
     {
         if (write (fd, GPIO_INT, strlen(GPIO_INT)) != strlen(GPIO_INT))
-            generateErrorMsg("Failed to export GPIO");
+            qCritical() << "Failed to export GPIO";
 
         close(fd);
+        return;
+    }
+}
+
+void Stm32p::gpioRelease()
+{
+    int fd = open("/sys/class/gpio/unexport", O_WRONLY);
+
+    if (!(fd < 0))
+    {
+        if (write (fd, GPIO_INT, strlen(GPIO_INT)) != strlen(GPIO_INT))
+            qCritical() << "Failed to unexport GPIO";
+
+        close(fd);
+        return;
     }
 
-    fd = open("/sys/class/gpio/gpio" GPIO_INT "/value", O_WRONLY);
+}
+
+void Stm32p::gpioDirection(bool output)
+{
+
+    int fd = open("/sys/class/gpio/gpio" GPIO_INT "/direction", O_WRONLY);
+
+    if (!(fd < 0))
+    {
+        if (write (fd, output ? "out" : "in", (output ? 3 : 2)) != (output ? 3 : 2))
+            qCritical() << "Failed to change direction of GPIO to " << (output ? "output" : "input");
+
+        close(fd);
+        return;
+    }
+}
+
+void Stm32p::gpioStateSet(bool state)
+{
+    qDebug() << "changing GPIO state to" << state;
+
+    int fd = open("/sys/class/gpio/gpio" GPIO_INT "/value", O_WRONLY);
 
     if (!(fd < 0))
     {
         if (write (fd, state ? "1" : "0", 1) != 1)
-            generateErrorMsg("Failed to set GPIO state");
+            qCritical() << "Failed to set GPIO state";
 
         close(fd);
     }
@@ -132,20 +138,26 @@ void Stm32p::gpioStateSet(bool state)
  */
 void Stm32p::startProgram()
 {
-    setStatus("Resetting", 1);
     vddStateSet(false);
+    gpioDirection(GPIO_OUT);
     gpioStateSet(false);
     QThread::msleep(10);
     vddStateSet(true);
 
-    if (STM32->cmdGetId() == QByteArray())
-        generateErrorMsg("GET ID Failed");
+    QThread::msleep(300);
+
+    QByteArray bootloaderVersion = STM32->cmdGetBootloaderVersion();
+    if (bootloaderVersion == QByteArray())
+        qCritical() << "Get Version Failed";
+    else
+        printf("Bootloader version v%s.%s\n", qPrintable(bootloaderVersion.toHex().at(0)), qPrintable(bootloaderVersion.toHex().at(1)));
+
+
+    QByteArray chipId = STM32->cmdGetId();
+    if (chipId == QByteArray())
+        qCritical() << "Get ID Failed";
+    else
+        printf("Device id is 0x%s\n", qPrintable(chipId.toHex()));
+
 }
 
-/*
- * Frontend of STM verifier (TBD)
- */
-void Stm32p::startVerify()
-{
-    generateErrorMsg("Not verifying yet");
-}
