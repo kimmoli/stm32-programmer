@@ -34,8 +34,6 @@ Stm32p::Stm32p(QObject *parent) :
 
 Stm32p::~Stm32p()
 {
-    qDebug() << "bye...";
-
     delete STM32;
 
     gpioRelease();
@@ -44,8 +42,6 @@ Stm32p::~Stm32p()
 
 bool Stm32p::filenameSet(QString name)
 {
-    qDebug() << "setting file name to" << name;
-
     hexFile.setFileName(name);
 
     return hexFile.exists();
@@ -56,8 +52,6 @@ bool Stm32p::filenameSet(QString name)
  */
 void Stm32p::vddStateSet(bool state)
 {
-    qDebug() << "changing vdd state to" << state;
-
     int fd = open("/sys/devices/platform/reg-userspace-consumer.0/state", O_WRONLY);
 
     if (!(fd < 0))
@@ -78,8 +72,6 @@ void Stm32p::vddStateSet(bool state)
 
 void Stm32p::gpioExport()
 {
-    qDebug() << "exporting gpio";
-
     int fd = open("/sys/class/gpio/export", O_WRONLY);
 
     if (!(fd < 0))
@@ -124,8 +116,6 @@ void Stm32p::gpioDirection(bool output)
 
 void Stm32p::gpioStateSet(bool state)
 {
-    qDebug() << "changing GPIO state to" << state;
-
     int fd = open("/sys/class/gpio/gpio" GPIO_INT "/value", O_WRONLY);
 
     if (!(fd < 0))

@@ -155,8 +155,6 @@ QByteArray stm32Driver::cmdWriteMemory(unsigned long address, QByteArray data)
 
     count = data.length();
 
-    qDebug() << "writing" << count << "bytes:" << data.toHex();
-
     buf[0] = count - 1;
 
     chksum = buf[0];
