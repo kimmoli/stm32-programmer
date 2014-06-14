@@ -17,26 +17,40 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 int main(int argc, char *argv[])
 {
+    bool fileNameGiven = false;
+
     printf("stm32-programmer version " APPVERSION " (C) kimmoli 2014\n\n");
 
     if (argc < 2)
     {
         printf("Usage:\n");
-        printf("stm32-programmer [filename] {options...}\n\n");
-        printf(" no options yet\n");
+        printf("stm32-programmer {-p filename} {options...}\n\n");
+        printf(" -p filename    program hex file\n");
+        printf(" -s             reset and start after programming\n");
         return 0;
     }
 
     Stm32p* stm32 = new Stm32p();
 
-    if (!stm32->filenameSet(QString(argv[1])))
+    for (int i=1; i<argc; i++)
     {
-        printf("File not found\n");
-        delete stm32;
-        return 0;
+        if (QString(argv[i]).left(2) == "-p")
+        {
+            if (!stm32->filenameSet(QString(argv[i+1])))
+            {
+                printf("File %s not found\n", argv[i+1]);
+                delete stm32;
+                return 0;
+            }
+            else
+                fileNameGiven = true;
+        }
+        else if (QString(argv[i]).left(2) == "-s")
+            stm32->startAfterProgramming = true;
     }
 
-    stm32->startProgram();
+    if (fileNameGiven)
+        stm32->startProgram();
 
     delete stm32;
     return 1;

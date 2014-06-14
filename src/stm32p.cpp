@@ -29,6 +29,8 @@ Stm32p::Stm32p(QObject *parent) :
     sectorEndAddress   << 0x08003FFF << 0x08007FFF << 0x0800BFFF << 0x0800FFFF << 0x0801FFFF << 0x0803FFFF << 0x0805FFFF << 0x0807FFFF;
     sectorErased << false << false << false << false << false << false << false << false;
 
+    startAfterProgramming = false;
+
     gpioExport();
 }
 
@@ -38,6 +40,13 @@ Stm32p::~Stm32p()
 
     gpioRelease();
     vddStateSet(false);
+
+    if (startAfterProgramming)
+    {
+        printf("Starting...\n");
+        QThread::msleep(300);
+        vddStateSet(true);
+    }
 }
 
 bool Stm32p::filenameSet(QString name)
@@ -174,9 +183,10 @@ void Stm32p::startProgram()
                 STM32->cmdEraseMemory(i);
                 sectorErased.replace(i, true);
             }
-        printf("Programming %d bytes to 0x%08lx (%s)\n", data.length(), address, qPrintable(data.toHex()));
+        printf("Programming 0x%08lx\r", address);
         STM32->cmdWriteMemory(address, data);
     }
+    printf("\n");
 
 }
 
@@ -215,17 +225,8 @@ bool Stm32p::parseHex(QTextStream* infile, unsigned long* address, QByteArray* d
 
                 ready = true;
             }
-            else if (type == 1) /* this is end of file record */
-            {
-                qDebug() << "end of file";
-            }
-            else if (type == 5) /* this is Start Linear Address Record */
-            {
-                qDebug() << "Start Linear Address Record" << QString("%1").arg(addr,0,16);
-            }
             else
-                qDebug() << "unknown type" << type;
-
+                ready = false; /* continue to next row */
         }
         else
         {
