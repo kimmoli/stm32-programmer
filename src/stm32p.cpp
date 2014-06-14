@@ -25,6 +25,10 @@ Stm32p::Stm32p(QObject *parent) :
 {
     STM32 = new stm32Driver(STM32F401_ADDRESS);
 
+    sectorStartAddress << 0x08000000 << 0x08004000 << 0x08008000 << 0x0800C000 << 0x08010000 << 0x08020000 << 0x08040000 << 0x08060000;
+    sectorEndAddress   << 0x08003FFF << 0x08007FFF << 0x0800BFFF << 0x0800FFFF << 0x0801FFFF << 0x0803FFFF << 0x0805FFFF << 0x0807FFFF;
+    sectorErased << false << false << false << false << false << false << false << false;
+
     gpioExport();
 }
 
@@ -173,8 +177,15 @@ void Stm32p::startProgram()
 
     while (parseHex(&infile, &address, &data))
     {
-        //qDebug() << "address" << QString("%1").arg(address,0,16) << "data" << data.toHex() << "count" << data.length();
+        for (int i=0; i<sectorErased.size(); ++i)
+            if (address >= sectorStartAddress.at(i) && address <= sectorEndAddress.at(i) && !sectorErased.at(i))
+            {
+                printf("Erasing sector %d (0x%08lx...%08lx)\n", i, sectorStartAddress.at(i), sectorEndAddress.at(i));
+                STM32->cmdEraseMemory(i);
+                sectorErased.replace(i, true);
+            }
         printf("Programming %d bytes to 0x%08lx (%s)\n", data.length(), address, qPrintable(data.toHex()));
+        STM32->cmdWriteMemory(address, data);
     }
 
 }
@@ -190,7 +201,6 @@ bool Stm32p::parseHex(QTextStream* infile, unsigned long* address, QByteArray* d
         row = infile->readLine().toUtf8();
         if (row.at(0) == ':')
         {
-            // :020000040800F2
             bool b = false;
 
             int type = row.mid(7, 2).toInt(&b, 16);
@@ -199,9 +209,6 @@ bool Stm32p::parseHex(QTextStream* infile, unsigned long* address, QByteArray* d
             if (type == 4) /* this is Extended Linear Address Record */
             {
                 addr = row.mid(9, 4).toLong(&b, 16) << 16;
-
-                qDebug() << "Extended Linear Address Record" << QString("%1").arg(addr, 0, 16);
-
                 ready = false;
             }
             else if (type == 0) /* this is data record */
@@ -212,8 +219,6 @@ bool Stm32p::parseHex(QTextStream* infile, unsigned long* address, QByteArray* d
 
                 for (int i=0; i<numOfBytes; i++)
                     tmp.append(row.mid(9+2*i, 2).toInt(&b, 16));
-
-                qDebug() << "data record" << QString("%1").arg(row.mid(9, numOfBytes*2).toLong(&b, 16), 0, 16) << "data" << tmp.toHex();
 
                 *data = tmp;
                 *address = addr;

@@ -33,7 +33,6 @@ public:
 
     void startProgram();
 
-
 //signals:
 
 private:
@@ -42,6 +41,9 @@ private:
 
     stm32Driver* STM32;
 
+    QList<unsigned long> sectorStartAddress;
+    QList<unsigned long> sectorEndAddress;
+    QList<bool> sectorErased;
 };
 
 
