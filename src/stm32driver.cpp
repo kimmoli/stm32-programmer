@@ -179,7 +179,7 @@ QByteArray stm32Driver::cmdWriteMemory(unsigned long address, QByteArray data)
 }
 
 /*
- * Erase
+ * Erase sector
  */
 
 QByteArray stm32Driver::cmdEraseMemory(int sector)

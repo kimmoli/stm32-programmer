@@ -161,13 +161,87 @@ void Stm32p::startProgram()
     else
         printf("Device id is 0x%s\n", qPrintable(chipId.toHex()));
 
-    printf("erasing sector 0 %s\n", qPrintable(STM32->cmdEraseMemory(0)));
+    if (!hexFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qCritical() << "Error opening file";
+        return;
+    }
 
-    printf("read 10 bytes from 0x08000000 %s\n", qPrintable(STM32->cmdReadMemory(0x08000000, 10).toHex()));
+    QByteArray data;
+    unsigned long address = 0;
+    QTextStream infile(&hexFile);
 
-    printf("write some data to flash; %s\n", qPrintable(STM32->cmdWriteMemory(0x08000000, QByteArray::fromHex("deadbeef"))));
-
-    printf("read 10 bytes from 0x08000000 %s\n", qPrintable(STM32->cmdReadMemory(0x08000000, 10).toHex()));
+    while (parseHex(&infile, &address, &data))
+    {
+        //qDebug() << "address" << QString("%1").arg(address,0,16) << "data" << data.toHex() << "count" << data.length();
+        printf("Programming %d bytes to 0x%08lx (%s)\n", data.length(), address, qPrintable(data.toHex()));
+    }
 
 }
+
+bool Stm32p::parseHex(QTextStream* infile, unsigned long* address, QByteArray* data)
+{
+    bool ready = false;
+    QByteArray row;
+    unsigned long addr = *address;
+
+    while (!ready && !infile->atEnd())
+    {
+        row = infile->readLine().toUtf8();
+        if (row.at(0) == ':')
+        {
+            // :020000040800F2
+            bool b = false;
+
+            int type = row.mid(7, 2).toInt(&b, 16);
+            int numOfBytes = row.mid(1, 2).toInt(&b, 16);
+
+            if (type == 4) /* this is Extended Linear Address Record */
+            {
+                addr = row.mid(9, 4).toLong(&b, 16) << 16;
+
+                qDebug() << "Extended Linear Address Record" << QString("%1").arg(addr, 0, 16);
+
+                ready = false;
+            }
+            else if (type == 0) /* this is data record */
+            {
+                addr = (addr & 0xFFFF0000) | row.mid(3, 4).toLong(&b, 16);
+
+                QByteArray tmp;
+
+                for (int i=0; i<numOfBytes; i++)
+                    tmp.append(row.mid(9+2*i, 2).toInt(&b, 16));
+
+                qDebug() << "data record" << QString("%1").arg(row.mid(9, numOfBytes*2).toLong(&b, 16), 0, 16) << "data" << tmp.toHex();
+
+                *data = tmp;
+                *address = addr;
+
+                ready = true;
+            }
+            else if (type == 1) /* this is end of file record */
+            {
+                qDebug() << "end of file";
+            }
+            else if (type == 5) /* this is Start Linear Address Record */
+            {
+                qDebug() << "Start Linear Address Record" << QString("%1").arg(addr,0,16);
+            }
+            else
+                qDebug() << "unknown type" << type;
+
+        }
+        else
+        {
+            qCritical() << "Error in hex file";
+            return false;
+        }
+    }
+
+    return !infile->atEnd();
+}
+
+
+
 

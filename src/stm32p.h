@@ -29,6 +29,8 @@ public:
 
     bool filenameSet(QString name);
 
+    bool parseHex(QTextStream* infile, unsigned long *address, QByteArray *data);
+
     void startProgram();
 
 
