@@ -140,11 +140,13 @@ void Stm32p::startProgram()
 {
     vddStateSet(false);
     gpioDirection(GPIO_OUT);
+
+    /* GPIO low when reset released enters bootloader */
     gpioStateSet(false);
-    QThread::msleep(10);
     vddStateSet(true);
 
-    QThread::msleep(300);
+    /* The voltagesupervisor keeps reset active for max 300ms */
+    QThread::msleep(400);
 
     QByteArray bootloaderVersion = STM32->cmdGetBootloaderVersion();
     if (bootloaderVersion == QByteArray())
@@ -158,6 +160,14 @@ void Stm32p::startProgram()
         qCritical() << "Get ID Failed";
     else
         printf("Device id is 0x%s\n", qPrintable(chipId.toHex()));
+
+    printf("erasing sector 0 %s\n", qPrintable(STM32->cmdEraseMemory(0)));
+
+    printf("read 10 bytes from 0x08000000 %s\n", qPrintable(STM32->cmdReadMemory(0x08000000, 10).toHex()));
+
+    printf("write some data to flash; %s\n", qPrintable(STM32->cmdWriteMemory(0x08000000, QByteArray::fromHex("deadbeef"))));
+
+    printf("read 10 bytes from 0x08000000 %s\n", qPrintable(STM32->cmdReadMemory(0x08000000, 10).toHex()));
 
 }
 

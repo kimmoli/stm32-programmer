@@ -12,6 +12,9 @@
  */
 #define CMD_GETVERSION  0x01
 #define CMD_GETID       0x02
+#define CMD_READMEMORY  0x11
+#define CMD_WRITEMEMORY 0x31
+#define CMD_ERASEMEMORY 0x44
 #define ACK             0x79
 #define NACK            0x1F
 #define BUSY            0x76
@@ -27,6 +30,9 @@ public:
     void init();
     QByteArray cmdGetId();
     QByteArray cmdGetBootloaderVersion();
+    QByteArray cmdReadMemory(unsigned long address, unsigned char count);
+    QByteArray cmdWriteMemory(unsigned long address, QByteArray data);
+    QByteArray cmdEraseMemory(int sector);
 
 
 private:
