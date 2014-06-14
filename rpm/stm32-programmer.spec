@@ -11,7 +11,7 @@ Name:       stm32-programmer
 
 Summary:    STM32 Programmer
 Version:    0.1
-Release:    1
+Release:    2
 Group:      Qt/Qt
 License:    LICENSE
 URL:        http://example.org/
