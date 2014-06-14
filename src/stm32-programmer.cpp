@@ -13,13 +13,29 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "stm32p.h"
 #include <QDebug>
 #include <QString>
+#include <QProcessEnvironment>
 
 
 int main(int argc, char *argv[])
 {
     bool fileNameGiven = false;
+    bool rootUser = false;
 
     printf("stm32-programmer version " APPVERSION " (C) kimmoli 2014\n\n");
+
+    QStringList environment = QProcessEnvironment::systemEnvironment().toStringList();
+    for (int n=0; n<environment.length(); n++)
+        if (environment.at(n) == "USER=root")
+        {
+            rootUser = true;
+            break;
+        }
+
+    if (!rootUser)
+    {
+        printf("You need to be root to use this utility!\n");
+        return 0;
+    }
 
     if (argc < 2)
     {
