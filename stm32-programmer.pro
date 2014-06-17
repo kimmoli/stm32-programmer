@@ -20,11 +20,13 @@ INSTALLS += target
 SOURCES += src/stm32-programmer.cpp \
 	src/stm32p.cpp \
     src/driverBase.cpp \
-    src/stm32driver.cpp
+    src/stm32driver.cpp \
+    src/i2ctester.cpp
 	
 HEADERS += src/stm32p.h \
     src/driverBase.h \
-    src/stm32driver.h
+    src/stm32driver.h \
+    src/i2ctester.h
 
 OTHER_FILES += \
     rpm/stm32-programmer.spec

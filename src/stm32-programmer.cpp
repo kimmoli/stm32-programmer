@@ -11,6 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <QCoreApplication>
 #include "stm32p.h"
+#include "i2ctester.h"
 #include <QDebug>
 #include <QString>
 #include <QProcessEnvironment>
@@ -20,8 +21,6 @@ int main(int argc, char *argv[])
 {
     bool fileNameGiven = false;
     bool rootUser = false;
-
-    printf("stm32-programmer version " APPVERSION " (C) kimmoli 2014\n\n");
 
     QStringList environment = QProcessEnvironment::systemEnvironment().toStringList();
     for (int n=0; n<environment.length(); n++)
@@ -33,16 +32,20 @@ int main(int argc, char *argv[])
 
     if (!rootUser)
     {
-        printf("You need to be root to use this utility!\n");
+        printf("Error: You need to be root to use this utility!\n");
         return 0;
     }
 
     if (argc < 2)
     {
+        printf("stm32-programmer version " APPVERSION " (C) kimmoli 2014\n\n");
         printf("Usage:\n");
         printf("stm32-programmer {-p filename} {options...}\n\n");
         printf(" -p filename    program hex file\n");
         printf(" -s             reset and start after programming\n");
+        printf(" -r addr count  test reading from i2c address (hex)\n");
+        printf(" -w addr data   test write one data byte to i2c addres (hex)\n");
+        printf(" -o             shutdown\n");
         return 0;
     }
 
@@ -59,10 +62,49 @@ int main(int argc, char *argv[])
                 return 0;
             }
             else
+            {
                 fileNameGiven = true;
+            }
         }
         else if (QString(argv[i]).left(2) == "-s")
+        {
             stm32->startAfterProgramming = true;
+        }
+        else if (QString(argv[i]).left(2) == "-r")
+        {
+            bool b;
+
+            printf("Reading...\n");
+
+            i2cTester* i2cTest = new i2cTester(QString(argv[i+1]).toInt(&b, 16));
+
+            i2cTest->testRead(QString(argv[i+2]).toInt());
+
+            delete i2cTest;
+
+            /* Keep alive */
+            stm32->startAfterProgramming = true;
+        }
+        else if (QString(argv[i]).left(2) == "-w")
+        {
+            bool b;
+
+            printf("Writing...\n");
+
+            i2cTester* i2cTest = new i2cTester(QString(argv[i+1]).toInt(&b, 16));
+
+            i2cTest->testWrite(QString(argv[i+2]).toInt(&b, 16));
+
+            delete i2cTest;
+
+            /* Keep alive */
+            stm32->startAfterProgramming = true;
+        }
+
+        else if (QString(argv[i]).left(2) == "-o")
+        {
+            stm32->vddStateSet(false);
+        }
     }
 
     if (fileNameGiven)

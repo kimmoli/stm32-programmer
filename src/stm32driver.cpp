@@ -3,7 +3,7 @@
 
 stm32Driver::stm32Driver(unsigned char address)
 {
-    driverAddress = address;
+    stmAddress = address;
     init();
 }
 
@@ -38,15 +38,15 @@ QByteArray stm32Driver::cmdGetId()
     buf[0] = CMD_GETID;
     buf[1] = CMD_GETID ^ 0xFF;
 
-    if (!writeBytes(driverAddress, buf, 2))
+    if (!writeBytes(stmAddress, buf, 2))
         return QByteArray();
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray();
 
-    QByteArray ret = readBytes(driverAddress, 3);
+    QByteArray ret = readBytes(stmAddress, 3);
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray();
 
     return ret.mid(1, 2); /* Return just the id */
@@ -67,15 +67,15 @@ QByteArray stm32Driver::cmdGetBootloaderVersion()
     buf[0] = CMD_GETVERSION;
     buf[1] = CMD_GETVERSION ^ 0xFF;
 
-    if (!writeBytes(driverAddress, buf, 2))
+    if (!writeBytes(stmAddress, buf, 2))
         return QByteArray();
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray();
 
-    QByteArray ret = readBytes(driverAddress, 1);
+    QByteArray ret = readBytes(stmAddress, 1);
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray();
 
     return ret;
@@ -88,10 +88,10 @@ QByteArray stm32Driver::cmdReadMemory(unsigned long address, unsigned char count
     buf[0] = CMD_READMEMORY;
     buf[1] = CMD_READMEMORY ^ 0xFF;
 
-    if (!writeBytes(driverAddress, buf, 2))
+    if (!writeBytes(stmAddress, buf, 2))
         return QByteArray("1. write");
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray("1. ack");
 
     buf[0] = (address >> 24) & 0xff;
@@ -100,22 +100,22 @@ QByteArray stm32Driver::cmdReadMemory(unsigned long address, unsigned char count
     buf[3] = (address) & 0xff;
     buf[4] = buf[0] ^ buf[1] ^ buf[2] ^ buf[3]; /* chksum */
 
-    if (!writeBytes(driverAddress, buf, 5))
+    if (!writeBytes(stmAddress, buf, 5))
         return QByteArray("2. write");
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray("2. ack");
 
     buf[0] = count - 1;
     buf[1] = buf[0] ^ 0xff;
 
-    if (!writeBytes(driverAddress, buf, 2))
+    if (!writeBytes(stmAddress, buf, 2))
         return QByteArray("3. write");
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray("3. ack");
 
-    QByteArray ret = readBytes(driverAddress, count);
+    QByteArray ret = readBytes(stmAddress, count);
 
     return ret;
 }
@@ -135,10 +135,10 @@ QByteArray stm32Driver::cmdWriteMemory(unsigned long address, QByteArray data)
     buf[0] = CMD_WRITEMEMORY;
     buf[1] = CMD_WRITEMEMORY ^ 0xFF;
 
-    if (!writeBytes(driverAddress, buf, 2))
+    if (!writeBytes(stmAddress, buf, 2))
         return QByteArray("1. write");
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray("1. ack");
 
     buf[0] = (address >> 24) & 0xff;
@@ -147,10 +147,10 @@ QByteArray stm32Driver::cmdWriteMemory(unsigned long address, QByteArray data)
     buf[3] = (address) & 0xff;
     buf[4] = buf[0] ^ buf[1] ^ buf[2] ^ buf[3]; /* chksum */
 
-    if (!writeBytes(driverAddress, buf, 5))
+    if (!writeBytes(stmAddress, buf, 5))
         return QByteArray("2. write");
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray("2. ack");
 
     count = data.length();
@@ -167,10 +167,10 @@ QByteArray stm32Driver::cmdWriteMemory(unsigned long address, QByteArray data)
 
     buf[count+1] = chksum;
 
-    if (!writeBytes(driverAddress, buf, count + 2))
+    if (!writeBytes(stmAddress, buf, count + 2))
         return QByteArray("3. write");
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray("3. ack");
 
     return QByteArray("ok");
@@ -188,10 +188,10 @@ QByteArray stm32Driver::cmdEraseMemory(int sector)
     buf[0] = CMD_ERASEMEMORY;
     buf[1] = CMD_ERASEMEMORY ^ 0xFF;
 
-    if (!writeBytes(driverAddress, buf, 2))
+    if (!writeBytes(stmAddress, buf, 2))
         return QByteArray("1. write");
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray("1. ack");
 
     /* Erase only one sector */
@@ -199,20 +199,20 @@ QByteArray stm32Driver::cmdEraseMemory(int sector)
     buf[1] = 0;
     buf[2] = buf[0] ^ buf[1];
 
-    if (!writeBytes(driverAddress, buf, 3))
+    if (!writeBytes(stmAddress, buf, 3))
         return QByteArray("2. write");
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray("2. ack");
 
     buf[0] = 0;
     buf[1] = sector & 0xff;
     buf[2] = buf[0] ^ buf[1];
 
-    if (!writeBytes(driverAddress, buf, 3))
+    if (!writeBytes(stmAddress, buf, 3))
         return QByteArray("3. write");
 
-    if (readBytes(driverAddress, 1).at(0) != ACK)
+    if (readBytes(stmAddress, 1).at(0) != ACK)
         return QByteArray("3. ack");
 
     return QByteArray("ok");

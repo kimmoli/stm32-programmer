@@ -34,6 +34,7 @@ public:
     void startProgram();
 
     bool startAfterProgramming;
+    bool doneProgramming;
 
 //signals:
 

@@ -30,6 +30,7 @@ Stm32p::Stm32p(QObject *parent) :
     sectorErased << false << false << false << false << false << false << false << false;
 
     startAfterProgramming = false;
+    doneProgramming = false;
 
     gpioExport();
 }
@@ -39,14 +40,18 @@ Stm32p::~Stm32p()
     delete STM32;
 
     gpioRelease();
-    vddStateSet(false);
 
-    if (startAfterProgramming)
+    if (doneProgramming)
+        vddStateSet(false);
+
+    if (doneProgramming && startAfterProgramming)
     {
         printf("Starting...\n");
         QThread::msleep(300);
-        vddStateSet(true);
     }
+
+    if (startAfterProgramming)
+        vddStateSet(true);
 }
 
 bool Stm32p::filenameSet(QString name)
@@ -187,6 +192,8 @@ void Stm32p::startProgram()
         STM32->cmdWriteMemory(address, data);
     }
     printf("\n");
+
+    doneProgramming = true;
 
 }
 

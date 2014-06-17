@@ -36,7 +36,7 @@ public:
 
 
 private:
-    unsigned char driverAddress;
+    unsigned char stmAddress;
 
 };
 
