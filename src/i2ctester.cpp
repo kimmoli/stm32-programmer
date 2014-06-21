@@ -10,11 +10,14 @@ void i2cTester::testRead(int count)
     qDebug() << readBytes(i2cAddress, count).toHex();
 }
 
-void i2cTester::testWrite(unsigned char data)
+void i2cTester::testWrite(QByteArray data)
 {
-    char buf[1];
+    char buf[255];
 
-    buf[0] = data;
+    for (int i=0 ; i<data.length(); i++)
+    {
+        buf[i] = data.at(i);
+    }
 
-    writeBytes(i2cAddress, buf, 1);
+    writeBytes(i2cAddress, buf, data.length());
 }

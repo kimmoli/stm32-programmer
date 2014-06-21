@@ -15,6 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QDebug>
 #include <QString>
 #include <QProcessEnvironment>
+#include <QThread>
 
 
 int main(int argc, char *argv[])
@@ -41,11 +42,12 @@ int main(int argc, char *argv[])
         printf("stm32-programmer version " APPVERSION " (C) kimmoli 2014\n\n");
         printf("Usage:\n");
         printf("stm32-programmer {-p filename} {options...}\n\n");
-        printf(" -p filename    program hex file\n");
-        printf(" -s             reset and start after programming\n");
-        printf(" -r addr count  test reading from i2c address (hex)\n");
-        printf(" -w addr data   test write one data byte to i2c addres (hex)\n");
-        printf(" -o             shutdown\n");
+        printf(" -p filename     program hex file\n");
+        printf(" -s              reset and start after programming\n");
+        printf(" -r addr count   test reading from i2c address (hex)\n");
+        printf(" -w addr data,.. test write data bytes (comma separated) to i2c addres (hex)\n");
+        printf(" -o              shutdown\n");
+        printf(" -x              reboot\n");
         return 0;
     }
 
@@ -93,7 +95,12 @@ int main(int argc, char *argv[])
 
             i2cTester* i2cTest = new i2cTester(QString(argv[i+1]).toInt(&b, 16));
 
-            i2cTest->testWrite(QString(argv[i+2]).toInt(&b, 16));
+            QStringList data = QString(argv[i+2]).split(',');
+            QByteArray databa;
+            for (int i=0 ; i<data.length() ; i++)
+                databa.append(data.at(i).toInt(&b, 16));
+
+            i2cTest->testWrite(databa);
 
             delete i2cTest;
 
@@ -104,6 +111,12 @@ int main(int argc, char *argv[])
         else if (QString(argv[i]).left(2) == "-o")
         {
             stm32->vddStateSet(false);
+        }
+        else if (QString(argv[i]).left(2) == "-x")
+        {
+            stm32->vddStateSet(false);
+            QThread::msleep(300);
+            stm32->vddStateSet(true);
         }
     }
 

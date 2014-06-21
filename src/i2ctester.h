@@ -9,7 +9,7 @@ public:
     explicit i2cTester(unsigned char address);
 
     void testRead(int count);
-    void testWrite(unsigned char data);
+    void testWrite(QByteArray data);
 
 private:
     unsigned char i2cAddress;

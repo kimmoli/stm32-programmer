@@ -147,6 +147,8 @@ void Stm32p::gpioStateSet(bool state)
 void Stm32p::startProgram()
 {
     vddStateSet(false);
+    QThread::msleep(300);
+
     gpioDirection(GPIO_OUT);
 
     /* GPIO low when reset released enters bootloader */
