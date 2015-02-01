@@ -1,15 +1,19 @@
-WIP
-===
-
 STM32 I2C Programmer for Jolla TOH
 ====================
 
 Program STM32 through I2C directly from Jolla.
 
-``stm32-programmer -p [filename] -s``
+Tested to work with STM32F401
 
--p [filename}   file to be programmed
+``stm32-programmer``
 
--s startup after programming (w/o this vdd will be shutdown)
+```
+ -p filename     program hex file
+ -s              reset and start after programming
+ -r addr count   test reading from i2c address (hex)
+ -w addr data,.. test write data bytes (comma separated) to i2c addres (hex)
+ -o              shutdown
+ -x              reboot
+```
 
 For more details, see ST Documents AN2606, AN4221
