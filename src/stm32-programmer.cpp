@@ -9,32 +9,121 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 
-#ifdef QT_QML_DEBUG
-#include <QtQuick>
-#endif
-
-#include <sailfishapp.h>
-#include <QtQml>
-#include <QScopedPointer>
-#include <QQuickView>
-#include <QQmlEngine>
-#include <QGuiApplication>
-#include <QQmlContext>
 #include <QCoreApplication>
 #include "stm32p.h"
-#include "filemodel.h"
+#include "i2ctester.h"
+#include <QDebug>
+#include <QString>
+#include <QProcessEnvironment>
+#include <QThread>
 
 
 int main(int argc, char *argv[])
 {
-    qmlRegisterType<Stm32p>("stm32.programmer.Stm32p", 1, 0, "Stm32p");
-    qmlRegisterType<Filemodel>("stm32.programmer.Filemodel", 1, 0, "Filemodel");
+    bool fileNameGiven = false;
+    bool rootUser = false;
 
-    QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
-    QScopedPointer<QQuickView> view(SailfishApp::createView());
-    view->setSource(SailfishApp::pathTo("qml/stm32-programmer.qml"));
-    view->show();
+    QStringList environment = QProcessEnvironment::systemEnvironment().toStringList();
+    for (int n=0; n<environment.length(); n++)
+        if (environment.at(n) == "USER=root")
+        {
+            rootUser = true;
+            break;
+        }
 
-    return app->exec();
+    if (!rootUser)
+    {
+        printf("Error: You need to be root to use this utility!\n");
+        return 0;
+    }
+
+    if (argc < 2)
+    {
+        printf("stm32-programmer version " APPVERSION " (C) kimmoli 2014\n\n");
+        printf("Usage:\n");
+        printf("stm32-programmer {-p filename} {options...}\n\n");
+        printf(" -p filename     program hex file\n");
+        printf(" -s              reset and start after programming\n");
+        printf(" -r addr count   test reading from i2c address (hex)\n");
+        printf(" -w addr data,.. test write data bytes (comma separated) to i2c addres (hex)\n");
+        printf(" -o              shutdown\n");
+        printf(" -x              reboot\n");
+        return 0;
+    }
+
+    Stm32p* stm32 = new Stm32p();
+
+    for (int i=1; i<argc; i++)
+    {
+        if (QString(argv[i]).left(2) == "-p")
+        {
+            if (!stm32->filenameSet(QString(argv[i+1])))
+            {
+                printf("File %s not found\n", argv[i+1]);
+                delete stm32;
+                return 0;
+            }
+            else
+            {
+                fileNameGiven = true;
+            }
+        }
+        else if (QString(argv[i]).left(2) == "-s")
+        {
+            stm32->startAfterProgramming = true;
+        }
+        else if (QString(argv[i]).left(2) == "-r")
+        {
+            bool b;
+
+            printf("Reading...\n");
+
+            i2cTester* i2cTest = new i2cTester(QString(argv[i+1]).toInt(&b, 16));
+
+            i2cTest->testRead(QString(argv[i+2]).toInt());
+
+            delete i2cTest;
+
+            /* Keep alive */
+            stm32->startAfterProgramming = true;
+        }
+        else if (QString(argv[i]).left(2) == "-w")
+        {
+            bool b;
+
+            printf("Writing...\n");
+
+            i2cTester* i2cTest = new i2cTester(QString(argv[i+1]).toInt(&b, 16));
+
+            QStringList data = QString(argv[i+2]).split(',');
+            QByteArray databa;
+            for (int i=0 ; i<data.length() ; i++)
+                databa.append(data.at(i).toInt(&b, 16));
+
+            i2cTest->testWrite(databa);
+
+            delete i2cTest;
+
+            /* Keep alive */
+            stm32->startAfterProgramming = true;
+        }
+
+        else if (QString(argv[i]).left(2) == "-o")
+        {
+            stm32->vddStateSet(false);
+        }
+        else if (QString(argv[i]).left(2) == "-x")
+        {
+            stm32->vddStateSet(false);
+            QThread::msleep(300);
+            stm32->vddStateSet(true);
+        }
+    }
+
+    if (fileNameGiven)
+        stm32->startProgram();
+
+    delete stm32;
+    return 1;
 }
 

@@ -12,58 +12,41 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #define STM32P_H
 #include "stm32driver.h"
 #include <QObject>
+#include <QFile>
 
 class Stm32p : public QObject
 {
-    Q_OBJECT
-    Q_PROPERTY(QString version READ readVersion NOTIFY versionChanged())
-    Q_PROPERTY(bool vddState READ vddStateGet WRITE vddStateSet NOTIFY vddStateChanged)
-    Q_PROPERTY(QString errorMsg READ errorMsgGet NOTIFY errorMsgChanged)
-    Q_PROPERTY(QString statusMsg READ statusMsgGet NOTIFY statusMsgChanged)
-    Q_PROPERTY(QString filename READ filenameGet WRITE filenameSet NOTIFY filenameChanged)
-    Q_PROPERTY(int progress READ progressGet NOTIFY progressChanged)
 
 public:
     explicit Stm32p(QObject *parent = 0);
     ~Stm32p();
 
-    QString readVersion();
-    bool vddStateGet() { return _vddState; }
     void vddStateSet(bool state);
-
     void gpioStateSet(bool state);
+    void gpioDirection(bool output);
+    void gpioExport();
+    void gpioRelease();
 
-    void filenameSet(QString name);
+    bool filenameSet(QString name);
 
-    QString errorMsgGet() { return _lastError; }
-    QString statusMsgGet() { return _status; }
-    int progressGet() { return _progress; }
-    QString filenameGet() { return _filename; }
+    bool parseHex(QTextStream* infile, unsigned long *address, QByteArray *data);
 
-    void generateErrorMsg(QString msg);
-    void setStatus(QString status, int progress);
+    void startProgram();
 
-    Q_INVOKABLE void startProgram();
-    Q_INVOKABLE void startVerify();
+    bool startAfterProgramming;
+    bool doneProgramming;
 
-
-signals:
-    void versionChanged();
-    void vddStateChanged();
-    void errorMsgChanged();
-    void statusMsgChanged();
-    void progressChanged();
-    void filenameChanged();
+//signals:
 
 private:
-    bool _vddState;
-    QString _lastError;
-    QString _status;
-    int _progress;
-    QString _filename;
+
+    QFile hexFile;
 
     stm32Driver* STM32;
 
+    QList<unsigned long> sectorStartAddress;
+    QList<unsigned long> sectorEndAddress;
+    QList<bool> sectorErased;
 };
 
 
