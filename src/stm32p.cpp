@@ -15,6 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QThread>
 #include <QDebug>
 #include <QFile>
+#include <unistd.h>
 
 #define GPIO_INT "67"
 #define GPIO_OUT true
